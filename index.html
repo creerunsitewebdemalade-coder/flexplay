@@ -3,49 +3,258 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>FlexPlay Officiel</title>
+  <title>FlexPlay - Connexion & Inscription</title>
   <style>
+    :root {
+      --bg-color: #0f172a;
+      --card-bg: #1e293b;
+      --text-color: #f8fafc;
+      --accent-blue: #0284c7;
+      --accent-green: #2ea44f;
+      --accent-red: #ef4444;
+    }
+
     body {
       font-family: Arial, sans-serif;
-      background-color: #0f172a;
-      color: #f8fafc;
+      background-color: var(--bg-color);
+      color: var(--text-color);
       margin: 0;
       padding: 20px;
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    .card {
+      background-color: var(--card-bg);
+      padding: 30px;
+      border-radius: 10px;
+      width: 100%;
+      max-width: 400px;
+      box-shadow: 0 4px 10px rgba(0, 0, 0, 0.4);
+    }
+
+    h2 {
+      margin-top: 0;
       text-align: center;
     }
-    .container {
-      max-width: 600px;
-      margin: 0 auto;
-      background: #1e293b;
-      padding: 20px;
-      border-radius: 8px;
+
+    .form-group {
+      margin-bottom: 15px;
     }
-    .btn {
-      display: inline-block;
-      background-color: #ff0000;
-      color: white;
-      padding: 10px 20px;
-      text-decoration: none;
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      font-size: 0.9rem;
+    }
+
+    input {
+      width: 100%;
+      padding: 10px;
       border-radius: 5px;
-      font-weight: bold;
-      margin: 5px;
+      border: 1px solid #334155;
+      background-color: #0f172a;
+      color: white;
+      box-sizing: border-box;
     }
-    .btn-discord {
-      background-color: #5865F2;
+
+    button {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 5px;
+      background-color: var(--accent-blue);
+      color: white;
+      font-weight: bold;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      opacity: 0.9;
+    }
+
+    .toggle-btn {
+      background: none;
+      border: none;
+      color: #38bdf8;
+      cursor: pointer;
+      text-decoration: underline;
+      padding: 0;
+      margin-top: 15px;
+      display: block;
+      width: 100%;
+      text-align: center;
+    }
+
+    .message {
+      margin-top: 15px;
+      padding: 10px;
+      border-radius: 5px;
+      text-align: center;
+      display: none;
+    }
+
+    .error { background-color: rgba(239, 68, 68, 0.2); color: var(--accent-red); }
+    .success { background-color: rgba(46, 164, 79, 0.2); color: var(--accent-green); }
+
+    /* Zone utilisateur connecté */
+    .dashboard {
+      display: none;
+      text-align: center;
+    }
+
+    .btn-logout {
+      background-color: var(--accent-red);
     }
   </style>
 </head>
 <body>
 
-  <div class="container">
-    <h1>🚀 FlexPlay Officiel</h1>
-    <p>Bienvenue sur ma page officielle !</p>
-    
-    <div>
-      <a href="https://www.youtube.com/@flexplay_officiel/shorts" target="_blank" class="btn">▶ YouTube Shorts</a>
-      <a href="https://discord.com/invite/Txegd2aJk" target="_blank" class="btn btn-discord">💬 Discord</a>
+  <div class="card">
+    <!-- Formulaire d'inscription -->
+    <div id="register-section">
+      <h2>Créer un compte</h2>
+      <form id="register-form">
+        <div class="form-group">
+          <label for="reg-nom">Nom</label>
+          <input type="text" id="reg-nom" required>
+        </div>
+        <div class="form-group">
+          <label for="reg-prenom">Prénom</label>
+          <input type="text" id="reg-prenom" required>
+        </div>
+        <div class="form-group">
+          <label for="reg-email">Adresse E-mail</label>
+          <input type="email" id="reg-email" required>
+        </div>
+        <div class="form-group">
+          <label for="reg-password">Mot de passe</label>
+          <input type="password" id="reg-password" required>
+        </div>
+        <button type="submit">S'inscrire</button>
+      </form>
+      <button class="toggle-btn" onclick="showLogin()">Déjà un compte ? Se connecter</button>
     </div>
+
+    <!-- Formulaire de connexion -->
+    <div id="login-section" style="display: none;">
+      <h2>Connexion</h2>
+      <form id="login-form">
+        <div class="form-group">
+          <label for="login-email">Adresse E-mail</label>
+          <input type="email" id="login-email" required>
+        </div>
+        <div class="form-group">
+          <label for="login-password">Mot de passe</label>
+          <input type="password" id="login-password" required>
+        </div>
+        <button type="submit">Se connecter</button>
+      </form>
+      <button class="toggle-btn" onclick="showRegister()">Pas encore de compte ? S'inscrire</button>
+    </div>
+
+    <!-- Espace membre (une fois connecté) -->
+    <div id="dashboard-section" class="dashboard">
+      <h2>Bienvenue !</h2>
+      <p id="user-info"></p>
+      <button class="btn-logout" onclick="logout()">Se déconnecter</button>
+    </div>
+
+    <!-- Zone de message d'erreur / succès -->
+    <div id="msg" class="message"></div>
   </div>
 
+  <script>
+    // Chargement des comptes enregistrés depuis le navigateur
+    function getUsers() {
+      return JSON.parse(localStorage.getItem('users')) || [];
+    }
+
+    // Affichage des messages
+    function showMsg(text, type) {
+      const msgDiv = document.getElementById('msg');
+      msgDiv.textContent = text;
+      msgDiv.className = 'message ' + type;
+      msgDiv.style.display = 'block';
+    }
+
+    function clearMsg() {
+      const msgDiv = document.getElementById('msg');
+      msgDiv.style.display = 'none';
+    }
+
+    // Basculer l'affichage
+    function showLogin() {
+      clearMsg();
+      document.getElementById('register-section').style.display = 'none';
+      document.getElementById('login-section').style.display = 'block';
+    }
+
+    function showRegister() {
+      clearMsg();
+      document.getElementById('login-section').style.display = 'none';
+      document.getElementById('register-section').style.display = 'block';
+    }
+
+    // Gestion de l'inscription
+    document.getElementById('register-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      clearMsg();
+
+      const nom = document.getElementById('reg-nom').value.trim();
+      const prenom = document.getElementById('reg-prenom').value.trim();
+      const email = document.getElementById('reg-email').value.trim().toLowerCase();
+      const password = document.getElementById('reg-password').value;
+
+      const users = getUsers();
+
+      // Vérifier si l'adresse email est déjà enregistrée
+      const exists = users.some(user => user.email === email);
+      if (exists) {
+        showMsg("Cette adresse e-mail est déjà utilisée.", "error");
+        return;
+      }
+
+      // Enregistrement du nouveau compte
+      const newUser = { nom, prenom, email, password };
+      users.push(newUser);
+      localStorage.setItem('users', JSON.stringify(users));
+
+      showMsg("Compte créé avec succès ! Vous pouvez vous connecter.", "success");
+      document.getElementById('register-form').reset();
+      setTimeout(showLogin, 1500);
+    });
+
+    // Gestion de la connexion
+    document.getElementById('login-form').addEventListener('submit', function(e) {
+      e.preventDefault();
+      clearMsg();
+
+      const email = document.getElementById('login-email').value.trim().toLowerCase();
+      const password = document.getElementById('login-password').value;
+
+      const users = getUsers();
+      const user = users.find(u => u.email === email && u.password === password);
+
+      if (user) {
+        document.getElementById('login-section').style.display = 'none';
+        document.getElementById('dashboard-section').style.display = 'block';
+        document.getElementById('user-info').textContent = `Connecté en tant que ${user.prenom} ${user.nom} (${user.email})`;
+      } else {
+        showMsg("E-mail ou mot de passe incorrect.", "error");
+      }
+    });
+
+    // Déconnexion
+    function logout() {
+      document.getElementById('dashboard-section').style.display = 'none';
+      document.getElementById('login-form').reset();
+      showLogin();
+      showMsg("Vous êtes déconnecté.", "success");
+    }
+  </script>
 </body>
 </html>
